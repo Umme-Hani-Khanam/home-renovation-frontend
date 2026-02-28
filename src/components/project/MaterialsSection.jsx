@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import API from "@/api/axios";
+import API from "@/api/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

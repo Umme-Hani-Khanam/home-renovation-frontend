@@ -1,70 +1,62 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import API from "@/api/axios";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import api from "@/api/api"
 
 export default function Signup() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const handleSignup = async () => {
-    try {
-      setLoading(true);
+  const [form, setForm] = useState({
+    email: "",
+    password: ""
+  })
 
-      const res = await API.post("/auth/signup", {
-        email,
-        password,
-      });
-
-      alert(res.data.message);
-      navigate("/");
-    } catch (error) {
-      alert(error.response?.data?.message || "Signup failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleSubmit = async () => {
+    await api.post("/auth/signup", form)
+    navigate("/login")
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 to-green-300">
-      <Card className="w-[400px] shadow-2xl">
-        <CardContent className="p-8 space-y-6">
-          <h2 className="text-3xl font-bold text-center text-green-800">
-            Create Account
-          </h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-gray-100 dark:from-slate-950 dark:to-slate-900">
 
-          <Input
-            placeholder="Email"
+      <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 p-10 rounded-3xl shadow-xl w-full max-w-md">
+
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          Create your renovation workspace
+        </h2>
+
+        <div className="space-y-4">
+
+          <input
             type="email"
-            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            className="w-full border rounded-xl px-4 py-2"
+            value={form.email}
+            onChange={(e) =>
+              setForm({ ...form, email: e.target.value })
+            }
           />
 
-          <Input
-            placeholder="Password"
+          <input
             type="password"
-            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            className="w-full border rounded-xl px-4 py-2"
+            value={form.password}
+            onChange={(e) =>
+              setForm({ ...form, password: e.target.value })
+            }
           />
 
-          <Button
-            className="w-full bg-green-700 hover:bg-green-800 transition"
-            onClick={handleSignup}
-            disabled={loading}
+          <button
+            onClick={handleSubmit}
+            className="w-full bg-emerald-600 text-white py-2 rounded-xl"
           >
-            {loading ? "Creating..." : "Signup"}
-          </Button>
+            Create Account
+          </button>
 
-          <p className="text-sm text-center">
-            Already have an account?{" "}
-            <Link to="/" className="text-green-700 font-semibold">
-              Login
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
+        </div>
+
+      </div>
+
     </div>
-  );
+  )
 }

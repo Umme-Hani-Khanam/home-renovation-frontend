@@ -1,111 +1,73 @@
-import { useEffect, useState } from "react";
-import API from "@/api/axios";
-import AppLayout from "@/components/layout/AppLayout";
-import CreateProjectDialog from "@/components/projects/CreateProjectDialog";
-import { useNavigate } from "react-router-dom";
-
+import { useEffect, useState } from "react"
+import api from "@/api/api"
+import BudgetPie from "@/components/BudgetPie"
+import { Textarea } from "@/components/ui/textarea"
 export default function Dashboard() {
-  const [projects, setProjects] = useState([]);
-  const navigate = useNavigate();
-
-  const fetchProjects = async () => {
-    const res = await API.get("/projects");
-    setProjects(res.data.data);
-  };
+  const [summary, setSummary] = useState(null)
 
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    fetchData()
+  }, [])
+
+  const fetchData = async () => {
+    const res = await api.get("/dashboard/summary")
+    setSummary(res.data.data)
+  }
+
+  if (!summary) return <div>Loading...</div>
 
   return (
-  <AppLayout>
-  <div className="flex justify-between items-center mb-10">
-    <div>
-      <h2 className="text-3xl font-bold text-gray-800">
-        Dashboard
-      </h2>
-      <p className="text-gray-500 mt-1">
-        Overview of your renovation projects
-      </p>
-    </div>
+    <div className="space-y-12">
 
-    <CreateProjectDialog refresh={fetchProjects} />
-  </div>
+      <h1 className="text-3xl font-bold tracking-tight">
+        Renovation Analytics
+      </h1>
 
-  {/* SUMMARY CARDS */}
-  <div className="grid md:grid-cols-3 gap-6 mb-10">
-    <div className="bg-white p-6 rounded-2xl shadow border">
-      <p className="text-gray-500 text-sm">Total Projects</p>
-      <h3 className="text-2xl font-bold text-emerald-600">
-        {projects.length}
-      </h3>
-    </div>
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Stat title="Projects" value={summary.totalProjects} />
+        <Stat title="Active" value={summary.activeProjects} />
+        <Stat title="Completed" value={summary.completedProjects} />
+        <Stat title="Overdue Tasks" value={summary.overdueTasks} />
+      </div>
 
-    <div className="bg-white p-6 rounded-2xl shadow border">
-      <p className="text-gray-500 text-sm">Total Budget</p>
-      <h3 className="text-2xl font-bold text-emerald-600">
-        ₹
-        {projects.reduce(
-          (sum, p) => sum + Number(p.total_budget || 0),
-          0
-        )}
-      </h3>
-    </div>
+      {/* Budget Section */}
+      <div className="grid lg:grid-cols-2 gap-8">
 
-    <div className="bg-white p-6 rounded-2xl shadow border">
-      <p className="text-gray-500 text-sm">Active Projects</p>
-      <h3 className="text-2xl font-bold text-emerald-600">
-        {
-          projects.filter(
-            (p) => p.status === "in_progress"
-          ).length
-        }
-      </h3>
-    </div>
-  </div>
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm">
+          <h2 className="text-xl font-semibold mb-6">
+            Budget Distribution
+          </h2>
 
-  {projects.length === 0 && (
-    <div className="bg-white border rounded-2xl shadow-lg p-14 text-center">
-      <h3 className="text-2xl font-semibold mb-2 text-gray-800">
-        No Projects Yet
-      </h3>
-      <p className="text-gray-500 mb-6">
-        Start your renovation journey.
-      </p>
-    </div>
-  )}
+          <BudgetPie
+            spent={summary.totalSpent}
+            total={summary.totalBudget}
+          />
+        </div>
 
-  {projects.length > 0 && (
-    <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {projects.map((project) => (
-        <div
-          key={project.id}
-          onClick={() => navigate(`/projects/${project.id}`)}
-          className="bg-white border rounded-2xl p-6 shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer"
-        >
-          <h3 className="text-xl font-semibold text-gray-800">
-            {project.name}
-          </h3>
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm">
+          <h2 className="text-xl font-semibold mb-6">
+            Financial Overview
+          </h2>
 
-          <p className="text-sm text-gray-500 mt-2">
-            Total Budget
-          </p>
-
-          <p className="text-2xl font-bold text-emerald-600 mb-4">
-            ₹{project.total_budget}
-          </p>
-
-          {/* STATIC PROGRESS FOR NOW */}
-          <div className="h-2 bg-gray-200 rounded-full">
-            <div
-              className="h-2 bg-emerald-600 rounded-full"
-              style={{ width: "60%" }}
-            />
+          <div className="space-y-4 text-sm">
+            <p>Total Budget: ₹{summary.totalBudget}</p>
+            <p>Total Spent: ₹{summary.totalSpent}</p>
+            <p>Remaining: ₹{summary.totalBudget - summary.totalSpent}</p>
           </div>
         </div>
-      ))}
+
+      </div>
+
     </div>
-  )}
-</AppLayout>
-  );
+  )
+}
+
+function Stat({ title, value }) {
+  return (
+    <div className="bg-gradient-to-br from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 border border-gray-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300">
+      <p className="text-sm text-muted-foreground">{title}</p>
+      <p className="text-3xl font-bold mt-3">{value}</p>
+    </div>
+  )
 }
