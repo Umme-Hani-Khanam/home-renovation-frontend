@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { BellRing, CalendarClock, CheckCircle2, Clock3 } from "lucide-react";
 
 import api from "@/api/api";
@@ -37,10 +37,12 @@ export default function Reminders() {
       setLoading(true);
       setError("");
 
-      const { data } = await api.get("/reminders");
+      const response = await api.get("/reminders");
+      const list = Array.isArray(response?.data?.data)
+        ? response.data.data
+        : [];
 
-      const safe = Array.isArray(data?.data) ? data.data : [];
-      setReminders(safe);
+      setReminders(list);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load reminders");
     } finally {
@@ -72,9 +74,11 @@ export default function Reminders() {
 
       setForm(initialForm);
       setOpen(false);
-      fetchReminders();
+      await fetchReminders();
     } catch (err) {
-      setFormError(err.response?.data?.message || "Failed to create reminder");
+      setFormError(
+        err.response?.data?.message || "Failed to create reminder"
+      );
     } finally {
       setSaving(false);
     }
@@ -83,27 +87,30 @@ export default function Reminders() {
   // ---------------- COMPLETE REMINDER ----------------
   const completeReminder = async (id) => {
     try {
+      // Optimistic update (remove instantly)
+      setReminders((prev) => prev.filter((r) => r.id !== id));
+
       await api.patch(`/reminders/${id}/complete`);
-      fetchReminders();
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to mark reminder as done");
+      setError(
+        err.response?.data?.message || "Failed to mark reminder as done"
+      );
+      fetchReminders(); // restore correct state if error
     }
   };
-
-  const upcomingReminders = useMemo(() => {
-    const safe = Array.isArray(reminders) ? reminders : [];
-    return safe.filter((r) => r.completed === false);
-  }, [reminders]);
 
   const now = Date.now();
 
   return (
     <div className="animate-fade-in space-y-8">
+      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Reminders</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Reminders
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Manage standalone reminders with clean in-app actions.
+            Manage your upcoming standalone reminders.
           </p>
         </div>
 
@@ -115,6 +122,7 @@ export default function Reminders() {
         </Button>
       </div>
 
+      {/* Reminder List */}
       <Card className="rounded-3xl border bg-[var(--surface)] shadow-sm">
         <CardContent className="space-y-4 p-5">
           <div className="flex items-center justify-between">
@@ -124,16 +132,17 @@ export default function Reminders() {
                 Upcoming Reminders
               </h2>
             </div>
+
             <Badge className="border-blue-200 bg-blue-50 text-blue-700">
-              {upcomingReminders.length} pending
+              {reminders.length} pending
             </Badge>
           </div>
 
           {loading && (
             <div className="space-y-3">
-              {[1, 2, 3].map((item) => (
+              {[1, 2, 3].map((i) => (
                 <div
-                  key={item}
+                  key={i}
                   className="h-20 animate-pulse rounded-2xl border bg-slate-100"
                 />
               ))}
@@ -142,7 +151,7 @@ export default function Reminders() {
 
           {error && <p className="text-red-600">{error}</p>}
 
-          {!loading && upcomingReminders.length === 0 && (
+          {!loading && reminders.length === 0 && (
             <div className="rounded-2xl border border-dashed py-10 text-center text-muted-foreground">
               <CalendarClock className="mx-auto mb-3 h-8 w-8 text-slate-400" />
               <p>No upcoming reminders.</p>
@@ -150,20 +159,24 @@ export default function Reminders() {
           )}
 
           <div className="space-y-3">
-            {upcomingReminders.map((reminder) => {
-              const reminderTime = new Date(reminder.reminder_date || 0).getTime();
+            {reminders.map((reminder) => {
+              const reminderTime = new Date(
+                reminder.reminder_date || 0
+              ).getTime();
               const isDue = reminderTime > 0 && reminderTime <= now;
 
               return (
                 <Card key={reminder.id} className="rounded-2xl border">
                   <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="space-y-1">
-                      <h3 className="font-semibold">
+                      <h3 className="font-semibold text-foreground">
                         {reminder.title || "Untitled reminder"}
                       </h3>
+
                       <p className="text-sm text-muted-foreground">
                         {reminder.description || "No description"}
                       </p>
+
                       <div className="inline-flex items-center gap-2">
                         <Badge
                           className={
@@ -175,6 +188,7 @@ export default function Reminders() {
                           <Clock3 className="mr-1 h-3.5 w-3.5" />
                           {isDue ? "Due now" : "Scheduled"}
                         </Badge>
+
                         <p className="text-xs text-muted-foreground">
                           {formatReminderDate(reminder.reminder_date)}
                         </p>
@@ -197,6 +211,7 @@ export default function Reminders() {
         </CardContent>
       </Card>
 
+      {/* Create Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="rounded-2xl">
           <DialogHeader>
@@ -211,6 +226,7 @@ export default function Reminders() {
                 setForm((prev) => ({ ...prev, title: e.target.value }))
               }
             />
+
             <Input
               placeholder="Description"
               value={form.description}
@@ -218,6 +234,7 @@ export default function Reminders() {
                 setForm((prev) => ({ ...prev, description: e.target.value }))
               }
             />
+
             <Input
               type="datetime-local"
               value={form.reminder_date}
