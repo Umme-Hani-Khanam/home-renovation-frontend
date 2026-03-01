@@ -1,84 +1,110 @@
-import { useEffect, useState } from "react"
-import api from "@/api/api"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
+import { useEffect, useState } from "react";
+import api from "@/api/api";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+
+const initialForm = {
+  name: "",
+  quantity: "",
+  unit: "",
+  low_stock_threshold: "",
+};
 
 export default function Inventory() {
-  const [items, setItems] = useState([])
-  const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState(null)
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [form, setForm] = useState({
-    name: "",
-    quantity: "",
-    location: ""
-  })
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [form, setForm] = useState(initialForm);
 
-  useEffect(() => { fetchItems() }, [])
+  useEffect(() => {
+    fetchItems();
+  }, []);
 
   const fetchItems = async () => {
-    const res = await api.get("/inventory")
-    setItems(res.data.data || [])
-  }
+    try {
+      setLoading(true);
+      setError("");
+      const res = await api.get("/inventory");
+      setItems(res.data?.data || []);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to load inventory");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleSubmit = async () => {
-    if (!form.name) return
-
-    if (editing) {
-      await api.put(`/inventory/${editing._id}`, form)
-    } else {
-      await api.post("/inventory", form)
+  const addItem = async () => {
+    if (!form.name.trim()) {
+      setFormError("Item name is required");
+      return;
     }
 
-    reset()
-    fetchItems()
-  }
+    try {
+      setSaving(true);
+      setFormError("");
 
-  const handleDelete = async (id) => {
-    await api.delete(`/inventory/${id}`)
-    fetchItems()
-  }
+      await api.post("/inventory", {
+        name: form.name.trim(),
+        quantity: Number(form.quantity || 0),
+        unit: form.unit.trim() || null,
+        low_stock_threshold: Number(form.low_stock_threshold || 0),
+      });
 
-  const handleEdit = (item) => {
-    setEditing(item)
-    setForm(item)
-    setOpen(true)
-  }
-
-  const reset = () => {
-    setForm({ name: "", quantity: "", location: "" })
-    setEditing(null)
-    setOpen(false)
-  }
+      setForm(initialForm);
+      setOpen(false);
+      fetchItems();
+    } catch (err) {
+      setFormError(err.response?.data?.message || "Failed to add inventory item");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Inventory</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Track tools and materials you already own.</p>
+        </div>
 
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Inventory</h1>
-        <Button className="bg-emerald-600 text-white rounded-xl" onClick={() => setOpen(true)}>
+        <Button
+          className="rounded-xl bg-emerald-600 text-white hover:bg-emerald-700"
+          onClick={() => setOpen(true)}
+        >
           + Add Item
         </Button>
       </div>
 
-      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {items.map(item => (
-          <Card key={item._id} className="rounded-2xl border shadow-sm hover:shadow-lg transition">
-            <CardContent className="space-y-3">
-              <h3 className="font-semibold text-lg">{item.name}</h3>
-              <p className="text-sm text-muted-foreground">
-                Quantity: {item.quantity}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Location: {item.location}
-              </p>
+      {loading && <p className="text-muted-foreground">Loading inventory...</p>}
+      {error && <p className="text-red-600">{error}</p>}
 
-              <div className="flex justify-end gap-4 text-sm">
-                <button onClick={() => handleEdit(item)} className="text-blue-600">Edit</button>
-                <button onClick={() => handleDelete(item._id)} className="text-red-600">Delete</button>
-              </div>
+      {!loading && !error && items.length === 0 && (
+        <Card className="rounded-3xl">
+          <CardContent className="py-12 text-center text-muted-foreground">
+            No inventory items yet.
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {items.map((item) => (
+          <Card key={item.id} className="rounded-3xl border shadow-sm">
+            <CardContent className="space-y-2">
+              <h3 className="text-lg font-semibold">{item.name}</h3>
+              <p className="text-sm text-muted-foreground">
+                Quantity: {Number(item.quantity || 0)} {item.unit || "units"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Low stock threshold: {Number(item.low_stock_threshold || 0)}
+              </p>
             </CardContent>
           </Card>
         ))}
@@ -87,29 +113,49 @@ export default function Inventory() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing ? "Edit Item" : "Add Item"}</DialogTitle>
+            <DialogTitle>Add Inventory Item</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <Input placeholder="Item Name"
+          <div className="space-y-3">
+            <Input
+              placeholder="Item name"
               value={form.name}
-              onChange={e => setForm({ ...form, name: e.target.value })} />
-
-            <Input placeholder="Quantity"
+              onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
+            />
+            <Input
+              type="number"
+              placeholder="Quantity"
+              min="0"
               value={form.quantity}
-              onChange={e => setForm({ ...form, quantity: e.target.value })} />
+              onChange={(event) => setForm((prev) => ({ ...prev, quantity: event.target.value }))}
+            />
+            <Input
+              placeholder="Unit (pcs, kg, ltr...)"
+              value={form.unit}
+              onChange={(event) => setForm((prev) => ({ ...prev, unit: event.target.value }))}
+            />
+            <Input
+              type="number"
+              min="0"
+              placeholder="Low stock threshold"
+              value={form.low_stock_threshold}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, low_stock_threshold: event.target.value }))
+              }
+            />
 
-            <Input placeholder="Location"
-              value={form.location}
-              onChange={e => setForm({ ...form, location: e.target.value })} />
+            {formError && <p className="text-sm text-red-600">{formError}</p>}
 
-            <Button className="w-full bg-emerald-600 text-white" onClick={handleSubmit}>
-              {editing ? "Update" : "Create"}
+            <Button
+              className="w-full bg-emerald-600 text-white hover:bg-emerald-700"
+              onClick={addItem}
+              disabled={saving}
+            >
+              {saving ? "Saving..." : "Add Item"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-
     </div>
-  )
+  );
 }

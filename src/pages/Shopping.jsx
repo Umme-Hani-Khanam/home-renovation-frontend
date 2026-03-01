@@ -1,87 +1,188 @@
-import { useEffect, useState } from "react"
-import api from "@/api/api"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useEffect, useState } from "react";
+import { CheckCircle2, ShoppingCart } from "lucide-react";
+
+import api from "@/api/api";
+
+import { useProject } from "@/context/ProjectContext";
+import ProjectSelector from "@/components/project/ProjectSelector";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function Shopping() {
-  const [items, setItems] = useState([])
-  const [newItem, setNewItem] = useState("")
+  const { selectedProject } = useProject();
+
+  const [items, setItems] = useState([]);
+  const [newItem, setNewItem] = useState("");
+  const [estimatedCost, setEstimatedCost] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchItems()
-  }, [])
+    if (!selectedProject?.id) {
+      setItems([]);
+      return;
+    }
 
-  const fetchItems = async () => {
-    const res = await api.get("/shopping")
-    setItems(res.data.data || [])
-  }
+    fetchItems(selectedProject.id);
+  }, [selectedProject?.id]);
+
+  const fetchItems = async (projectId) => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const res = await api.get(`/shopping/${projectId}`);
+      setItems(res.data?.data || []);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to fetch shopping list");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addItem = async () => {
-    if (!newItem) return
-    await api.post("/shopping", { name: newItem, checked: false })
-    setNewItem("")
-    fetchItems()
-  }
+    if (!selectedProject?.id) return;
 
-  const toggleItem = async (item) => {
-    await api.put(`/shopping/${item._id}`, {
-      ...item,
-      checked: !item.checked
-    })
-    fetchItems()
-  }
+    if (!newItem.trim()) {
+      setError("Item name is required");
+      return;
+    }
 
-  const deleteItem = async (id) => {
-    await api.delete(`/shopping/${id}`)
-    fetchItems()
-  }
+    try {
+      setSaving(true);
+      setError("");
+
+      await api.post("/shopping", {
+        project_id: selectedProject.id,
+        item_name: newItem.trim(),
+        estimated_cost: Number(estimatedCost || 0),
+      });
+
+      setNewItem("");
+      setEstimatedCost("");
+      fetchItems(selectedProject.id);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to add shopping item");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const togglePurchased = async (item) => {
+    try {
+      setError("");
+
+      await api.patch(`/shopping/${item.id}`, {
+        purchased: !item.purchased,
+        actual_cost: item.actual_cost ?? item.estimated_cost ?? 0,
+      });
+
+      fetchItems(selectedProject.id);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to update item");
+    }
+  };
+
+  const safeItems = Array.isArray(items) ? items : [];
 
   return (
-    <div className="space-y-10">
-
-      <h1 className="text-3xl font-bold">Shopping List</h1>
-
-      <div className="flex gap-4">
-        <Input
-          placeholder="Add new item..."
-          value={newItem}
-          onChange={(e) => setNewItem(e.target.value)}
-        />
-        <Button className="bg-emerald-600 text-white" onClick={addItem}>
-          Add
-        </Button>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Shopping List</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Track items to buy and purchased costs.</p>
       </div>
 
-      <div className="space-y-4">
-        {items.map(item => (
-          <Card key={item._id} className="rounded-xl border shadow-sm">
-            <CardContent className="flex justify-between items-center py-4">
+      <ProjectSelector required />
 
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={item.checked}
-                  onChange={() => toggleItem(item)}
-                  className="w-4 h-4"
-                />
-                <span className={item.checked ? "line-through text-gray-400" : ""}>
-                  {item.name}
-                </span>
+      {selectedProject && (
+        <Card className="rounded-3xl border bg-[var(--surface)] shadow-sm">
+          <CardContent className="grid gap-3 p-4 sm:grid-cols-3">
+            <Input
+              placeholder="Item name"
+              value={newItem}
+              onChange={(event) => setNewItem(event.target.value)}
+              className="h-10 rounded-xl sm:col-span-2"
+            />
+            <Input
+              type="number"
+              min="0"
+              placeholder="Estimated cost"
+              value={estimatedCost}
+              onChange={(event) => setEstimatedCost(event.target.value)}
+              className="h-10 rounded-xl"
+            />
+            <Button
+              className="h-10 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 sm:col-span-3"
+              onClick={addItem}
+              disabled={saving}
+            >
+              {saving ? "Adding..." : "Add Item"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {loading && (
+        <div className="space-y-3">
+          {[1, 2, 3].map((item) => (
+            <div key={item} className="h-20 animate-pulse rounded-2xl border bg-slate-100" />
+          ))}
+        </div>
+      )}
+      {error && <p className="text-red-600">{error}</p>}
+
+      {selectedProject && !loading && safeItems.length === 0 && (
+        <Card className="rounded-3xl">
+          <CardContent className="flex flex-col items-center gap-3 py-12 text-center text-muted-foreground">
+            <ShoppingCart className="h-8 w-8 text-slate-400" />
+            <p>No shopping items for this project.</p>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="space-y-4">
+        {safeItems.map((item) => (
+          <Card key={item.id} className="rounded-2xl border bg-[var(--surface)] shadow-sm">
+            <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className={`font-medium ${item.purchased ? "line-through text-muted-foreground" : ""}`}>
+                  {item.item_name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Estimated: INR {Number(item.estimated_cost || 0).toLocaleString()}
+                </p>
+                <Badge
+                  className={
+                    item.purchased
+                      ? "mt-2 border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "mt-2 border-amber-200 bg-amber-50 text-amber-700"
+                  }
+                >
+                  {item.purchased ? (
+                    <span className="inline-flex items-center gap-1">
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Purchased
+                    </span>
+                  ) : (
+                    "Pending Purchase"
+                  )}
+                </Badge>
               </div>
 
-              <button
-                onClick={() => deleteItem(item._id)}
-                className="text-red-600 text-sm"
+              <Button
+                variant={item.purchased ? "outline" : "default"}
+                className={item.purchased ? "h-10 rounded-xl" : "h-10 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700"}
+                onClick={() => togglePurchased(item)}
               >
-                Delete
-              </button>
-
+                {item.purchased ? "Mark Unpurchased" : "Mark Purchased"}
+              </Button>
             </CardContent>
           </Card>
         ))}
       </div>
-
     </div>
-  )
+  );
 }

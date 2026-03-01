@@ -1,169 +1,184 @@
-import { useEffect, useState } from "react"
-import api from "@/api/api"
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
+// c:\Users\Umme Hani Khanam\OneDrive\Desktop\Projects\home-renovation-frontend\src\components\project\ExpenseSection.jsx
+import { useEffect, useState } from "react";
+import api from "@/api/api";
+import { useProject } from "@/context/ProjectContext";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+
+const initialForm = {
+  title: "",
+  category: "",
+  amount: "",
+};
 
 export default function ExpenseSection() {
-  const [expenses, setExpenses] = useState([])
-  const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState(null)
+  const { selectedProject } = useProject();
+  const projectId = selectedProject?.id;
 
-  const [form, setForm] = useState({
-    title: "",
-    amount: "",
-  })
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [form, setForm] = useState(initialForm);
 
   useEffect(() => {
-    fetchExpenses()
-  }, [])
-
-  const fetchExpenses = async () => {
-    try {
-      const res = await api.get("/expenses")
-      setExpenses(res.data.data || [])
-    } catch (err) {
-      console.error("Expense fetch error:", err)
+    if (!projectId) {
+      setExpenses([]);
+      return;
     }
-  }
 
-  const handleSubmit = async () => {
+    fetchExpenses(projectId);
+  }, [projectId]);
+
+  const fetchExpenses = async (id) => {
     try {
-      if (editing) {
-        await api.put(`/expenses/${editing._id}`, form)
-      } else {
-        await api.post("/expenses", form)
-      }
+      setLoading(true);
+      setError("");
 
-      setOpen(false)
-      setEditing(null)
-      setForm({ title: "", amount: "" })
-      fetchExpenses()
+      const res = await api.get(`/expenses/${id}`);
+      setExpenses(res.data?.data || []);
     } catch (err) {
-      console.error("Expense save error:", err)
+      setError(err.response?.data?.message || "Failed to fetch expenses");
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  const handleDelete = async (id) => {
-    await api.delete(`/expenses/${id}`)
-    fetchExpenses()
-  }
+  const addExpense = async () => {
+    if (!projectId) return;
 
-  const handleEdit = (expense) => {
-    setEditing(expense)
-    setForm(expense)
-    setOpen(true)
+    if (!form.title.trim()) {
+      setFormError("Expense title is required");
+      return;
+    }
+
+    if (form.amount === "" || Number(form.amount) < 0) {
+      setFormError("Valid amount is required");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setFormError("");
+
+      await api.post("/expenses", {
+        project_id: projectId,
+        title: form.title.trim(),
+        category: form.category.trim() || null,
+        amount: Number(form.amount),
+      });
+
+      setForm(initialForm);
+      setOpen(false);
+      fetchExpenses(projectId);
+    } catch (err) {
+      setFormError(err.response?.data?.message || "Failed to add expense");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteExpense = async (id) => {
+    try {
+      await api.delete(`/expenses/${id}`);
+      fetchExpenses(projectId);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to delete expense");
+    }
+  };
+
+  if (!projectId) {
+    return (
+      <Card className="rounded-2xl border">
+        <CardContent className="py-10 text-center text-muted-foreground">
+          Select a project to manage expenses.
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
-    <div className="space-y-10">
-
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Expenses
-        </h1>
-
-        <Button
-          className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl"
-          onClick={() => setOpen(true)}
-        >
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Expenses</h2>
+        <Button className="bg-emerald-600 text-white hover:bg-emerald-700" onClick={() => setOpen(true)}>
           + Add Expense
         </Button>
       </div>
 
-      {expenses.length === 0 && (
-        <Card className="rounded-2xl border shadow-sm">
-          <CardContent className="py-20 text-center text-muted-foreground">
-            No expenses recorded
+      {loading && <p className="text-muted-foreground">Loading expenses...</p>}
+      {error && <p className="text-red-600">{error}</p>}
+
+      {!loading && expenses.length === 0 && (
+        <Card className="rounded-2xl border">
+          <CardContent className="py-10 text-center text-muted-foreground">
+            No expenses recorded yet.
           </CardContent>
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid gap-4 md:grid-cols-2">
         {expenses.map((expense) => (
-          <Card
-            key={expense._id}
-            className="rounded-2xl border shadow-sm hover:shadow-lg transition-all duration-300"
-          >
-            <CardContent className="space-y-4">
-
-              <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-lg">
-                  {expense.title}
-                </h3>
-
-                <span className="text-red-600 font-bold">
-                  ₹{expense.amount}
+          <Card key={expense.id} className="rounded-2xl border">
+            <CardContent className="space-y-2">
+              <div className="flex items-center justify-between gap-4">
+                <h3 className="font-semibold">{expense.title}</h3>
+                <span className="font-semibold text-red-600">
+                  INR {Number(expense.amount || 0).toLocaleString()}
                 </span>
               </div>
-
-              <div className="flex justify-end gap-4 text-sm">
-                <button
-                  onClick={() => handleEdit(expense)}
-                  className="text-blue-600"
-                >
-                  Edit
-                </button>
-
-                <button
-                  onClick={() => handleDelete(expense._id)}
-                  className="text-red-600"
-                >
-                  Delete
-                </button>
-              </div>
-
+              <p className="text-sm text-muted-foreground">{expense.category || "Uncategorized"}</p>
+              <button className="text-sm text-red-600" onClick={() => deleteExpense(expense.id)}>
+                Delete
+              </button>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Modal */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {editing ? "Edit Expense" : "Create Expense"}
-            </DialogTitle>
+            <DialogTitle>Add Expense</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <Input
               placeholder="Title"
               value={form.title}
-              onChange={(e) =>
-                setForm({ ...form, title: e.target.value })
-              }
+              onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
             />
-
+            <Input
+              placeholder="Category"
+              value={form.category}
+              onChange={(event) => setForm((prev) => ({ ...prev, category: event.target.value }))}
+            />
             <Input
               type="number"
+              min="0"
               placeholder="Amount"
               value={form.amount}
-              onChange={(e) =>
-                setForm({ ...form, amount: e.target.value })
-              }
+              onChange={(event) => setForm((prev) => ({ ...prev, amount: event.target.value }))}
             />
 
+            {formError && <p className="text-sm text-red-600">{formError}</p>}
+
             <Button
-              onClick={handleSubmit}
-              className="w-full bg-emerald-600 text-white"
+              className="w-full bg-emerald-600 text-white hover:bg-emerald-700"
+              onClick={addExpense}
+              disabled={saving}
             >
-              {editing ? "Update" : "Create"}
+              {saving ? "Saving..." : "Add Expense"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-
     </div>
-  )
+  );
 }
