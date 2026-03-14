@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">Photo placeholder</title>
+  <desc id="desc">Gradient placeholder illustration for missing project photos.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#d1fae5" />
+      <stop offset="100%" stop-color="#cffafe" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)" rx="48" />
+  <g fill="none" stroke="#0f766e" stroke-linecap="round" stroke-linejoin="round" stroke-width="28" opacity="0.82">
+    <rect x="170" y="170" width="860" height="560" rx="42" />
+    <circle cx="430" cy="365" r="72" />
+    <path d="M265 615l170-165 132 120 118-95 250 140" />
+  </g>
+</svg>

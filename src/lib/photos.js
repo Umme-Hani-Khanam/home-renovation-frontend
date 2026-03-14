@@ -1,3 +1,5 @@
+export const PLACEHOLDER_PHOTO_SRC = "/placeholder-photo.svg";
+
 export function toBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -34,4 +36,29 @@ export function normalizeImageUrl(imageUrl, apiBaseUrl) {
   }
 
   return url;
+}
+
+export function createOptimisticPhotos(files) {
+  return files.map((file, index) => ({
+    id: `pending-${Date.now()}-${index}`,
+    image_url: URL.createObjectURL(file),
+    created_at: new Date().toISOString(),
+    pending: true,
+    file_name: file.name,
+  }));
+}
+
+export function revokeOptimisticPhotos(photos) {
+  for (const photo of photos || []) {
+    if (photo?.pending && photo.image_url?.startsWith("blob:")) {
+      URL.revokeObjectURL(photo.image_url);
+    }
+  }
+}
+
+export function applyImageFallback(event) {
+  const img = event.currentTarget;
+  if (img.dataset.fallbackApplied === "true") return;
+  img.dataset.fallbackApplied = "true";
+  img.src = PLACEHOLDER_PHOTO_SRC;
 }

@@ -51,8 +51,8 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 to-gray-100 dark:from-slate-950 dark:to-slate-900">
-      <div className="w-full max-w-md rounded-3xl border border-gray-200 bg-[var(--surface)] p-10 shadow-xl dark:border-slate-800">
+    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-emerald-50 to-gray-100 dark:from-slate-950 dark:to-slate-900">
+      <div className="w-full max-w-md rounded-3xl border border-gray-200 bg(-surface) p-10 shadow-xl dark:border-slate-800">
         <h2 className="mb-6 text-center text-2xl font-bold text-gray-900 dark:text-gray-100">
           Login to Your Workspace
         </h2>
