@@ -1,9 +1,41 @@
 export const PLACEHOLDER_PHOTO_SRC = "/placeholder-photo.svg";
 
-export function toBase64(file) {
+export function toBase64(file, { maxWidth = 1200, quality = 0.7 } = {}) {
   return new Promise((resolve, reject) => {
+    if (!(file instanceof File) || !file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
+
+    reader.onload = () => {
+      const image = new Image();
+      image.onload = () => {
+        const scale = image.width > maxWidth ? maxWidth / image.width : 1;
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+
+        if (!context) {
+          resolve(reader.result);
+          return;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        context.drawImage(image, 0, 0, width, height);
+
+        resolve(canvas.toDataURL(file.type || "image/jpeg", quality));
+      };
+      image.onerror = () => resolve(reader.result);
+      image.src = reader.result;
+    };
+
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
