@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { Camera, ClipboardList, ShieldCheck, Sparkles, Wallet } from "lucide-react";
+import { ClipboardList, ShieldCheck, Sparkles, Wallet } from "lucide-react";
+
 
 export default function Home() {
   const navigate = useNavigate();
@@ -23,7 +24,11 @@ export default function Home() {
       desc: "Turn messy renovation to-dos into a clear timeline with reminders, ownership, and momentum.",
       icon: ClipboardList,
     },
-    
+    {
+      title: "AI Suggestions",
+      desc: "AI-powered DIY ideas, material estimation, and smart renovation tips to plan and improve your projects.",
+      icon: Sparkles,
+    },
   ];
 
   return (
@@ -40,12 +45,18 @@ export default function Home() {
           className="absolute bottom-[-120px] right-[-120px] h-[450px] w-[450px] rounded-full bg-teal-300/30 blur-3xl"
         />
         <motion.div
-          animate={reduceMotion ? { y: 0, rotate: 0 } : { y: [0, 20, 0], rotate: [0, 8, 0] }}
+          animate={
+            reduceMotion
+              ? { y: 0, rotate: 0 }
+              : { y: [0, 20, 0], rotate: [0, 8, 0] }
+          }
           transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
           className="absolute left-[12%] top-[26%] h-20 w-20 rounded-[28px] border border-white/60 bg-white/30 backdrop-blur-xl"
         />
         <motion.div
-          animate={reduceMotion ? { y: 0, x: 0 } : { y: [0, -18, 0], x: [0, 8, 0] }}
+          animate={
+            reduceMotion ? { y: 0, x: 0 } : { y: [0, -18, 0], x: [0, 8, 0] }
+          }
           transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
           className="absolute right-[18%] top-[18%] h-28 w-28 rounded-full border border-emerald-200/70 bg-emerald-100/50 backdrop-blur-xl dark:border-emerald-400/20 dark:bg-emerald-400/10"
         />
@@ -107,8 +118,9 @@ export default function Home() {
             transition={{ ...fastTransition, delay: 0.12 }}
             className="mb-10 max-w-2xl text-lg text-[var(--text-secondary)] dark:text-gray-200"
           >
-            Track budgets, tasks, contractors, permits, and photo progress in one elegant
-            workspace designed for homeowners who want fewer surprises and more control.
+            Track budgets, tasks, contractors, permits, and photo progress in
+            one elegant workspace designed for homeowners who want fewer
+            surprises and more control.
           </motion.p>
 
           <motion.div
@@ -180,7 +192,9 @@ export default function Home() {
                 <p className="mt-2 text-sm text-white/80">of $24k planned</p>
               </div>
               <div className="rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-lg backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-950/55">
-                <p className="text-sm text-slate-500 dark:text-slate-300">Upcoming today</p>
+                <p className="text-sm text-slate-500 dark:text-slate-300">
+                  Upcoming today
+                </p>
                 <ul className="mt-3 space-y-3 text-sm text-slate-700 dark:text-slate-200">
                   <li className="flex items-center justify-between rounded-2xl bg-slate-50 px-3 py-2 dark:bg-slate-800/80">
                     <span>Tile delivery</span>
@@ -194,8 +208,6 @@ export default function Home() {
               </div>
             </div>
           </motion.div>
-
-         
         </motion.div>
       </motion.section>
 
@@ -226,7 +238,9 @@ export default function Home() {
               <h3 className="mb-4 text-xl font-semibold text-emerald-700 dark:text-emerald-300">
                 {feature.title}
               </h3>
-              <p className="text-[var(--text-secondary)] dark:text-slate-200">{feature.desc}</p>
+              <p className="text-[var(--text-secondary)] dark:text-slate-200">
+                {feature.desc}
+              </p>
             </motion.div>
           );
         })}
