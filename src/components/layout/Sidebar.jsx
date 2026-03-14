@@ -13,7 +13,7 @@ const navItems = [
   { to: "/dashboard/inventory", label: "Inventory" },
   { to: "/dashboard/materials", label: "Materials" },
   { to: "/dashboard/permits", label: "Permits" },
-  { to: "/dashboard/photos", label: "Photos" },
+ 
   { to: "/dashboard/shopping", label: "Shopping" },
   { to: "/dashboard/inspiration", label: "Inspiration", highlight: true },
 ];

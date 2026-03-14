@@ -23,11 +23,7 @@ export default function Home() {
       desc: "Turn messy renovation to-dos into a clear timeline with reminders, ownership, and momentum.",
       icon: ClipboardList,
     },
-    {
-      title: "Progress Photos",
-      desc: "Capture before-and-after proof, upload instantly, and keep every project milestone easy to review.",
-      icon: Camera,
-    },
+    
   ];
 
   return (
@@ -199,20 +195,7 @@ export default function Home() {
             </div>
           </motion.div>
 
-          <motion.div
-            animate={reduceMotion ? undefined : { y: [0, 12, 0] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -bottom-8 -left-4 rounded-[28px] border border-white/70 bg-white/65 p-4 shadow-xl shadow-slate-950/10 backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/65"
-          >
-            <p className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-300">
-              Progress Photos
-            </p>
-            <div className="mt-3 flex gap-3">
-              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-emerald-200 to-emerald-400" />
-              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-teal-200 to-cyan-400" />
-              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-300" />
-            </div>
-          </motion.div>
+         
         </motion.div>
       </motion.section>
 

@@ -14,7 +14,7 @@ import Contractors from "@/pages/Contractors"
 import Inventory from "@/pages/Inventory"
 import Materials from "@/pages/Materials"
 import Permits from "@/pages/Permits"
-import Photos from "@/pages/Photos"
+
 import Shopping from "@/pages/Shopping"
 import Inspiration from "@/pages/Inspiration"
 import ProjectDetails from "@/pages/ProjectDetails"
@@ -57,7 +57,7 @@ export default function AppRoutes() {
           <Route path="inventory" element={<Inventory />} />
           <Route path="materials" element={<Materials />} />
           <Route path="permits" element={<Permits />} />
-          <Route path="photos" element={<Photos />} />
+         
           <Route path="shopping" element={<Shopping />} />
           <Route path="inspiration" element={<Inspiration />} />
         </Route>

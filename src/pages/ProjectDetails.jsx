@@ -7,7 +7,7 @@ import { useProject } from "@/context/ProjectContext";
 import ProjectOverviewSection from "@/components/project/ProjectOverviewSection";
 import ExpenseSection from "@/components/project/ExpenseSection";
 import ShoppingSection from "@/components/project/ShoppingSection";
-import PhotoSection from "@/components/project/PhotoSection";
+
 import ContractorSection from "@/components/project/ContractorSection";
 import PermitSection from "@/components/project/PermitSection";
 import InventorySection from "@/components/project/InventorySection";
@@ -20,7 +20,7 @@ const tabs = [
   { key: "overview", label: "Overview", component: ProjectOverviewSection },
   { key: "expenses", label: "Expenses", component: ExpenseSection },
   { key: "shopping", label: "Shopping", component: ShoppingSection },
-  { key: "photos", label: "Photos", component: PhotoSection },
+
   { key: "contractors", label: "Contractors", component: ContractorSection },
   { key: "permits", label: "Permits", component: PermitSection },
   { key: "inventory", label: "Inventory", component: InventorySection },
