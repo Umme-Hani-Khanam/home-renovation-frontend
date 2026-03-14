@@ -52,7 +52,7 @@ export default function ReminderSection() {
 
   if (!projectReminders.length) {
     return (
-      <Card className="rounded-2xl border">
+      <Card className="app-card rounded-2xl">
         <CardContent className="py-8 text-center text-muted-foreground">
           <BellRing className="mx-auto mb-3 h-8 w-8 text-slate-400" />
           No upcoming reminders.
@@ -68,15 +68,15 @@ export default function ReminderSection() {
         const isDue = reminderTime > 0 && reminderTime <= timeAnchor;
 
         return (
-          <Card key={reminder.id} className="rounded-2xl border">
-            <CardContent className="space-y-2 p-4">
+          <Card key={reminder.id} className="app-card rounded-2xl">
+            <CardContent className="space-y-3 p-5">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="font-semibold">{reminder.title || "Untitled reminder"}</h3>
+                <h3 className="text-base font-semibold">{reminder.title || "Untitled reminder"}</h3>
                 <Badge
                   className={
                     isDue
-                      ? "animate-pulse border-rose-200 bg-rose-50 text-rose-700"
-                      : "border-amber-200 bg-amber-50 text-amber-700"
+                      ? "status-badge status-danger"
+                      : "status-badge status-pending"
                   }
                 >
                   <Clock3 className="mr-1 h-3.5 w-3.5" />
@@ -85,7 +85,7 @@ export default function ReminderSection() {
               </div>
               <p className="text-sm text-muted-foreground">{reminder.description || "No description"}</p>
               <div className="flex items-center justify-between gap-3">
-                <p className="text-xs text-muted-foreground">{formatReminderDate(reminder.reminder_date)}</p>
+                <p className="text-xs text-muted-foreground">{formatReminderDate(reminder.reminder_at)}</p>
                 <Button variant="outline" className="h-9 rounded-xl" onClick={() => markDone(reminder.id)}>
                   <CheckCircle2 className="h-4 w-4" />
                   Done

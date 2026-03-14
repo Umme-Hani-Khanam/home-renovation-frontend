@@ -124,19 +124,19 @@ export default function ShoppingSection() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Card className="rounded-2xl border">
+        <Card className="app-card rounded-2xl">
           <CardContent className="p-4">
             <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">Estimated Total</p>
             <p className="text-lg font-semibold">INR {estimatedTotal.toLocaleString()}</p>
           </CardContent>
         </Card>
-        <Card className={`rounded-2xl border ${isOverBudget ? "border-rose-300" : ""}`}>
+        <Card className={`app-card rounded-2xl ${isOverBudget ? "border-rose-300" : ""}`}>
           <CardContent className="p-4">
             <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">Actual Total (Purchased)</p>
             <p className={`text-lg font-semibold ${isOverBudget ? "text-rose-700" : ""}`}>INR {actualTotal.toLocaleString()}</p>
           </CardContent>
         </Card>
-        <Card className="rounded-2xl border">
+        <Card className="app-card rounded-2xl">
           <CardContent className="p-4">
             <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">Completion</p>
             <p className="text-lg font-semibold">{completionPercentage}%</p>
@@ -144,7 +144,7 @@ export default function ShoppingSection() {
         </Card>
       </div>
 
-      <Card className="rounded-2xl border bg-[var(--surface)] shadow-sm">
+      <Card className="app-card rounded-2xl">
         <CardContent className="grid gap-3 p-4 sm:grid-cols-3">
           <Input
             placeholder="Item name"
@@ -187,7 +187,7 @@ export default function ShoppingSection() {
 
       <div className="space-y-3">
         {safeItems.map((item) => (
-          <Card key={item.id} className="rounded-2xl border bg-[var(--surface)] shadow-sm">
+          <Card key={item.id} className="app-card rounded-2xl">
             <CardContent className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1">
                 <p className={item.purchased ? "font-medium text-muted-foreground line-through" : "font-medium"}>
@@ -199,8 +199,8 @@ export default function ShoppingSection() {
                 <Badge
                   className={
                     item.purchased
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                      : "border-amber-200 bg-amber-50 text-amber-700"
+                      ? "status-badge status-success"
+                      : "status-badge status-pending"
                   }
                 >
                   {item.purchased ? (

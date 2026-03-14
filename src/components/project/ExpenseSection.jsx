@@ -123,20 +123,24 @@ export default function ExpenseSection() {
         </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {expenses.map((expense) => (
-          <Card key={expense.id} className="rounded-2xl border">
-            <CardContent className="space-y-2">
-              <div className="flex items-center justify-between gap-4">
-                <h3 className="font-semibold">{expense.title}</h3>
-                <span className="font-semibold text-red-600">
+          <Card key={expense.id} className="app-card rounded-2xl">
+            <CardContent className="space-y-3 p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <h3 className="text-base font-semibold leading-tight">{expense.title}</h3>
+                  <p className="text-xs text-muted-foreground">{expense.category || "Uncategorized"}</p>
+                </div>
+                <span className="text-sm font-semibold text-rose-600 dark:text-rose-300">
                   INR {Number(expense.amount || 0).toLocaleString()}
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground">{expense.category || "Uncategorized"}</p>
-              <button className="text-sm text-red-600" onClick={() => deleteExpense(expense.id)}>
-                Delete
-              </button>
+              <div className="flex justify-end">
+                <button className="text-xs font-medium text-rose-600 transition hover:text-rose-700 dark:text-rose-300 dark:hover:text-rose-200" onClick={() => deleteExpense(expense.id)}>
+                  Delete
+                </button>
+              </div>
             </CardContent>
           </Card>
         ))}

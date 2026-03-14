@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+﻿import { useCallback, useMemo, useState } from "react";
 import { Camera, ImageOff, UploadCloud } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 
 import api from "@/api/api";
 import { useProject } from "@/context/ProjectContext";
@@ -12,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 function MissingImageCard() {
   return (
-    <Card className="mb-4 break-inside-avoid rounded-2xl border">
+    <Card className="app-card mb-4 break-inside-avoid rounded-2xl">
       <CardContent className="flex h-52 items-center justify-center text-sm text-muted-foreground">
         <span className="inline-flex items-center gap-2">
           <ImageOff className="h-4 w-4" />
@@ -38,17 +39,25 @@ function photoStage(index, total) {
 }
 
 function photoStageClass(stage) {
-  if (stage === "Before") return "border-blue-200 bg-blue-50 text-blue-700";
-  if (stage === "After") return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  return "border-amber-200 bg-amber-50 text-amber-700";
+  if (stage === "Before") return "status-badge status-progress";
+  if (stage === "After") return "status-badge status-success";
+  return "status-badge status-pending";
 }
 
 export default function PhotoSection() {
+  const reduceMotion = useReducedMotion();
   const { selectedProject } = useProject();
   const projectId = selectedProject?.id;
 
   const [uploading, setUploading] = useState(false);
   const [previewPhoto, setPreviewPhoto] = useState(null);
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [brokenImages, setBrokenImages] = useState({});
+
+  const fetchPhotos = useCallback(async (id) => {
+    const res = await api.get(`/photos/${id}`);
+    return Array.isArray(res.data?.data) ? res.data.data : [];
+  }, []);
 
   const {
     data: photos,
@@ -58,10 +67,7 @@ export default function PhotoSection() {
     refetch,
   } = useProjectData({
     projectId,
-    fetcher: async (id) => {
-      const res = await api.get(`/photos/${id}`);
-      return Array.isArray(res.data?.data) ? res.data.data : [];
-    },
+    fetcher: fetchPhotos,
   });
 
   const orderedPhotos = useMemo(() => {
@@ -80,6 +86,7 @@ export default function PhotoSection() {
     try {
       setUploading(true);
       setError("");
+      setUploadMessage("");
 
       for (const file of files) {
         const dataUrl = await toBase64(file);
@@ -93,6 +100,7 @@ export default function PhotoSection() {
       }
 
       await refetch();
+      setUploadMessage(`${files.length} photo${files.length > 1 ? "s" : ""} uploaded successfully.`);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to upload photos");
     } finally {
@@ -112,13 +120,18 @@ export default function PhotoSection() {
   }
 
   return (
-    <div className="animate-fade-in space-y-4">
+    <motion.div
+      className="space-y-4"
+      initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+    >
       <div>
         <h2 className="text-xl font-semibold tracking-tight">Photo Timeline</h2>
         <p className="text-sm text-muted-foreground">Capture and review progress with before/after timeline context.</p>
       </div>
 
-      <label className="block cursor-pointer rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/50 p-6 text-center text-sm text-emerald-900 transition hover:border-emerald-400 hover:bg-emerald-50">
+      <label className="block cursor-pointer rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/50 p-6 text-center text-sm text-emerald-900 transition hover:border-emerald-400 hover:bg-emerald-50 dark:border-emerald-500/50 dark:bg-emerald-500/10 dark:text-emerald-200">
         <span className="inline-flex items-center gap-2 font-medium">
           <UploadCloud className="h-4 w-4" />
           {uploading ? "Uploading photos..." : "Click to upload project photos"}
@@ -133,10 +146,12 @@ export default function PhotoSection() {
           ))}
         </div>
       )}
+
       {!!error && <p className="text-sm text-red-600">{error}</p>}
+      {!!uploadMessage && !uploading && <p className="text-sm text-emerald-700 dark:text-emerald-300">{uploadMessage}</p>}
 
       {!loading && !uploading && orderedPhotos.length === 0 && (
-        <Card className="rounded-2xl border">
+        <Card className="app-card rounded-2xl">
           <CardContent className="flex flex-col items-center gap-3 py-8 text-center text-muted-foreground">
             <Camera className="h-8 w-8 text-slate-400" />
             <p>No project photos uploaded yet.</p>
@@ -149,30 +164,32 @@ export default function PhotoSection() {
         {orderedPhotos.map((photo, index) => {
           const imageUrl = normalizeImageUrl(photo?.image_url, import.meta.env.VITE_API_URL);
           const stage = photoStage(index, orderedPhotos.length);
+          const imageKey = String(photo.id || index);
+          const isBroken = Boolean(brokenImages[imageKey]);
 
-          if (!imageUrl) {
+          if (!imageUrl || isBroken) {
             return <MissingImageCard key={photo?.id || `missing-${index}`} />;
           }
 
           return (
             <Card
               key={photo.id || `photo-${index}`}
-              className="group mb-4 cursor-pointer break-inside-avoid overflow-hidden rounded-2xl border shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+              className="app-card group mb-4 cursor-pointer break-inside-avoid overflow-hidden rounded-2xl"
               onClick={() => setPreviewPhoto({ url: imageUrl, stage, created_at: photo?.created_at })}
             >
               <CardContent className="relative p-0">
                 <img
                   src={imageUrl}
                   alt="Project"
-                  className="h-auto w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-                  onError={(event) => {
-                    event.currentTarget.style.display = "none";
+                  className="h-auto w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.035]"
+                  onError={() => {
+                    setBrokenImages((prev) => ({ ...prev, [imageKey]: true }));
                   }}
                 />
                 <div className="absolute inset-0 bg-black/0 transition group-hover:bg-black/15" />
                 <div className="absolute left-2 top-2 flex flex-col gap-1">
                   <Badge className={photoStageClass(stage)}>{stage}</Badge>
-                  <Badge className="border-slate-200 bg-slate-50 text-slate-700">{formatDate(photo?.created_at)}</Badge>
+                  <Badge className="status-badge border-slate-300 bg-slate-50 text-slate-700 dark:border-slate-600 dark:bg-slate-800/70 dark:text-slate-200">{formatDate(photo?.created_at)}</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -184,7 +201,7 @@ export default function PhotoSection() {
         <DialogContent className="max-h-[90vh] max-w-4xl overflow-hidden rounded-2xl p-2">
           <DialogHeader className="px-3 pt-3">
             <DialogTitle>
-              {previewPhoto?.stage || "Photo"} � {formatDate(previewPhoto?.created_at)}
+              {previewPhoto?.stage || "Photo"} • {formatDate(previewPhoto?.created_at)}
             </DialogTitle>
           </DialogHeader>
           {previewPhoto?.url && (
@@ -192,6 +209,6 @@ export default function PhotoSection() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 }

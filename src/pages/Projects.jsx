@@ -95,10 +95,10 @@ export default function Projects() {
   };
 
   const statusStyle = (status) => {
-    if (status === "completed") return "bg-emerald-100 text-emerald-700";
-    if (status === "in_progress") return "bg-amber-100 text-amber-700";
-    if (status === "on_hold") return "bg-orange-100 text-orange-700";
-    return "bg-gray-100 text-gray-600";
+    if (status === "completed") return "status-badge status-success";
+    if (status === "in_progress") return "status-badge status-progress";
+    if (status === "on_hold") return "status-badge status-pending";
+    return "status-badge status-pending";
   };
 
   return (
@@ -132,7 +132,7 @@ export default function Projects() {
         {projects.map((project) => (
           <motion.div key={project.id} whileHover={{ y: -6 }}>
             <Card
-              className="cursor-pointer rounded-3xl border shadow-sm transition hover:shadow-lg"
+              className="app-card cursor-pointer rounded-3xl"
               onClick={() => openProject(project)}
             >
               <CardHeader>
@@ -146,11 +146,7 @@ export default function Projects() {
                   </span>
                 </div>
 
-                <span
-                  className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${statusStyle(
-                    project.status
-                  )}`}
-                >
+                <span className={`inline-block ${statusStyle(project.status)}`}>
                   {(project.status || "planning").replace("_", " ")}
                 </span>
               </CardContent>

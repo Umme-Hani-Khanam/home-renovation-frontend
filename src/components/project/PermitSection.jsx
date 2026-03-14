@@ -16,9 +16,9 @@ const initialForm = {
 };
 
 const permitStatusClass = {
-  pending: "border-amber-200 bg-amber-50 text-amber-700",
-  approved: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  rejected: "border-rose-200 bg-rose-50 text-rose-700",
+  pending: "status-badge status-pending",
+  approved: "status-badge status-success",
+  rejected: "status-badge status-danger",
 };
 
 export default function PermitSection() {
@@ -141,7 +141,7 @@ export default function PermitSection() {
         </select>
       </div>
 
-      <Card className="rounded-2xl border bg-[var(--surface)] shadow-sm">
+      <Card className="app-card rounded-2xl">
         <CardContent className="space-y-3 p-4">
           <div className="grid gap-3 md:grid-cols-3">
             <Input
@@ -200,10 +200,10 @@ export default function PermitSection() {
           const status = permit.status || "pending";
 
           return (
-            <Card key={permit.id} className="rounded-2xl border bg-[var(--surface)] shadow-sm">
+            <Card key={permit.id} className="app-card rounded-2xl">
               <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
-                  <h3 className="font-semibold tracking-tight">{permit.permit_name}</h3>
+                  <h3 className="text-base font-semibold tracking-tight">{permit.permit_name}</h3>
                   <p className="text-sm text-muted-foreground">Approval: {permit.approval_date || "Not set"}</p>
                   <Badge className={`capitalize ${permitStatusClass[status] || permitStatusClass.pending}`}>
                     {status}

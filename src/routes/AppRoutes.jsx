@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from "react-router-dom"
+﻿import { Routes, Route, Navigate, useLocation } from "react-router-dom"
+import { AnimatePresence } from "framer-motion"
 
 import DashboardLayout from "@/components/layout/DashboardLayout"
 
@@ -14,11 +15,11 @@ import Inventory from "@/pages/Inventory"
 import Materials from "@/pages/Materials"
 import Permits from "@/pages/Permits"
 import Photos from "@/pages/Photos"
-import Reminders from "@/pages/Reminders"
 import Shopping from "@/pages/Shopping"
 import Inspiration from "@/pages/Inspiration"
 import ProjectDetails from "@/pages/ProjectDetails"
 import ExpenseSection from "@/components/project/ExpenseSection"
+import PageTransition from "@/components/shared/PageTransition"
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token")
@@ -26,38 +27,45 @@ function ProtectedRoute({ children }) {
 }
 
 export default function AppRoutes() {
+  const location = useLocation()
+  const routeScopeKey = location.pathname.startsWith("/dashboard")
+    ? "/dashboard"
+    : location.pathname
+
   return (
-    <Routes>
+    <AnimatePresence mode="wait" initial={false}>
+      <Routes location={location} key={routeScopeKey}>
 
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+        <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+        <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+        <Route path="/signup" element={<PageTransition><Signup /></PageTransition>} />
 
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<Dashboard />} />
-        <Route path="projects" element={<Projects />} />
-        <Route path="projects/:id" element={<ProjectDetails />} />
-        <Route path="tasks" element={<Tasks />} />
-        <Route path="expenses" element={<ExpenseSection />} />
-        <Route path="contractors" element={<Contractors />} />
-        <Route path="inventory" element={<Inventory />} />
-        <Route path="materials" element={<Materials />} />
-        <Route path="permits" element={<Permits />} />
-        <Route path="photos" element={<Photos />} />
-        <Route path="reminders" element={<Reminders />} />
-        <Route path="shopping" element={<Shopping />} />
-        <Route path="inspiration" element={<Inspiration />} />
-      </Route>
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="projects" element={<Projects />} />
+          <Route path="projects/:id" element={<ProjectDetails />} />
+          <Route path="tasks" element={<Tasks />} />
+          <Route path="expenses" element={<ExpenseSection />} />
+          <Route path="contractors" element={<Contractors />} />
+          <Route path="inventory" element={<Inventory />} />
+          <Route path="materials" element={<Materials />} />
+          <Route path="permits" element={<Permits />} />
+          <Route path="photos" element={<Photos />} />
+          <Route path="shopping" element={<Shopping />} />
+          <Route path="inspiration" element={<Inspiration />} />
+        </Route>
 
-      <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={<Navigate to="/" />} />
 
-    </Routes>
+      </Routes>
+    </AnimatePresence>
   )
 }
+

@@ -142,12 +142,12 @@ export default function ContractorSection() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="rounded-2xl border"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Active Contractors</p><p className="text-2xl font-bold">{contractors.length}</p></CardContent></Card>
-        <Card className="rounded-2xl border"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Scheduled Visits</p><p className="text-2xl font-bold">{scheduledCount}</p></CardContent></Card>
-        <Card className="rounded-2xl border"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Recent Activities</p><p className="text-2xl font-bold">{activity.length}</p></CardContent></Card>
+        <Card className="app-card rounded-2xl"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Active Contractors</p><p className="text-2xl font-bold">{contractors.length}</p></CardContent></Card>
+        <Card className="app-card rounded-2xl"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Scheduled Visits</p><p className="text-2xl font-bold">{scheduledCount}</p></CardContent></Card>
+        <Card className="app-card rounded-2xl"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Recent Activities</p><p className="text-2xl font-bold">{activity.length}</p></CardContent></Card>
       </div>
 
-      <Card className="rounded-2xl border">
+      <Card className="app-card rounded-2xl">
         <CardContent className="space-y-3 p-4">
           <div className="grid gap-3 md:grid-cols-2">
             <Input
@@ -196,7 +196,7 @@ export default function ContractorSection() {
       )}
 
       {!loading && contractors.length > 0 && (
-        <Card className="rounded-2xl border">
+        <Card className="app-card rounded-2xl">
           <CardContent className="space-y-3 p-4">
             <h3 className="font-semibold">Schedule Appointment</h3>
             <select
@@ -234,11 +234,11 @@ export default function ContractorSection() {
 
       <div className="grid gap-3 md:grid-cols-2">
         {contractors.map((contractor) => (
-          <Card key={contractor.id} className="rounded-2xl border">
-            <CardContent className="space-y-1 p-4">
+          <Card key={contractor.id} className="app-card rounded-2xl">
+            <CardContent className="space-y-2 p-4">
               <div className="flex items-center justify-between">
-                <p className="font-semibold">{contractor.name}</p>
-                <Badge className="border-blue-200 bg-blue-50 text-blue-700">{contractor.role || "general"}</Badge>
+                <p className="text-base font-semibold">{contractor.name}</p>
+                <Badge className="status-badge status-progress">{contractor.role || "general"}</Badge>
               </div>
               <p className="text-sm text-muted-foreground">{contractor.phone || "No phone"}</p>
               <p className="text-sm text-muted-foreground">{contractor.email || "No email"}</p>
@@ -248,7 +248,7 @@ export default function ContractorSection() {
       </div>
 
       {activity.length > 0 && (
-        <Card className="rounded-2xl border">
+        <Card className="app-card rounded-2xl">
           <CardContent className="space-y-2 p-4">
             <h3 className="font-semibold">Recent Activity</h3>
             {activity.slice(0, 5).map((item, index) => (

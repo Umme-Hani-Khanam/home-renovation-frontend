@@ -32,7 +32,8 @@ export default function Materials() {
     try {
       const res = await api.get(`/materials/${projectId}`);
       setMaterials(Array.isArray(res.data?.data) ? res.data.data : []);
-    } catch {
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to fetch materials");
       setMaterials([]);
     }
   };
@@ -119,25 +120,25 @@ export default function Materials() {
       {error && <p className="text-red-600">{error}</p>}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card className="rounded-2xl border">
+        <Card className="app-card rounded-2xl">
           <CardContent className="space-y-1 p-4">
             <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">Estimated Total</p>
             <p className="text-xl font-bold">INR {estimatedTotal.toLocaleString()}</p>
           </CardContent>
         </Card>
-        <Card className={`rounded-2xl border ${isOverBudget ? "border-rose-300" : ""}`}>
+        <Card className={`app-card rounded-2xl ${isOverBudget ? "border-rose-300" : ""}`}>
           <CardContent className="space-y-1 p-4">
             <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">Actual Total (Purchased)</p>
             <p className={`text-xl font-bold ${isOverBudget ? "text-rose-700" : ""}`}>INR {actualTotal.toLocaleString()}</p>
           </CardContent>
         </Card>
-        <Card className="rounded-2xl border">
+        <Card className="app-card rounded-2xl">
           <CardContent className="space-y-1 p-4">
             <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">Completion %</p>
             <p className="text-xl font-bold">{completionPercentage}%</p>
           </CardContent>
         </Card>
-        <Card className="rounded-2xl border">
+        <Card className="app-card rounded-2xl">
           <CardContent className="space-y-1 p-4">
             <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">Budget Status</p>
             <p className={`text-sm font-semibold ${isOverBudget ? "text-rose-700" : "text-emerald-700"}`}>
@@ -167,9 +168,9 @@ export default function Materials() {
       {!loading && materials.length > 0 && (
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {Array.isArray(materials) && materials.map((item, index) => (
-            <Card key={`${item?.name || "material"}-${index}`} className="rounded-3xl border shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <Card key={`${item?.name || "material"}-${index}`} className="app-card rounded-3xl">
               <CardContent className="space-y-2 p-5">
-                <h3 className="text-lg font-semibold tracking-tight">{item?.name || "Unnamed material"}</h3>
+                <h3 className="text-base font-semibold tracking-tight">{item?.name || "Unnamed material"}</h3>
                 <p className="text-sm text-muted-foreground">
                   Estimated cost: INR {Number(item?.estimated_cost || 0).toLocaleString()}
                 </p>

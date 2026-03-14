@@ -1,52 +1,68 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import api from "@/api/api"
+﻿import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "@/api/api";
 
 export default function Login() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const emailRef = useRef(null);
 
   const [form, setForm] = useState({
     email: "",
-    password: ""
-  })
+    password: "",
+  });
 
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    emailRef.current?.focus();
+  }, []);
 
   const handleSubmit = async () => {
     try {
-      setLoading(true)
-      setError("")
+      setLoading(true);
+      setError("");
 
-      const res = await api.post("/auth/login", form)
+      const payload = {
+        email: form.email.trim(),
+        password: form.password,
+      };
+      const res = await api.post("/auth/login", payload);
+      const { success, token, user } = res.data ?? {};
 
-      localStorage.setItem("token", res.data.token)
+      if (!success || !token) {
+        throw new Error("Invalid login response");
+      }
 
-      navigate("/dashboard")
+      localStorage.setItem("token", token);
+      if (user) {
+        localStorage.setItem("user", JSON.stringify(user));
+      }
 
+      navigate("/dashboard");
     } catch (err) {
-      console.error(err)
-      setError("Invalid email or password")
+      console.error(err);
+      setError(
+        err.response?.data?.message || "Invalid email or password"
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-gray-100 dark:from-slate-950 dark:to-slate-900">
-
-      <div className="bg-[var(--surface)] border border-gray-200 dark:border-slate-800 p-10 rounded-3xl shadow-xl w-full max-w-md">
-
-        <h2 className="text-2xl font-bold mb-6 text-center">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 to-gray-100 dark:from-slate-950 dark:to-slate-900">
+      <div className="w-full max-w-md rounded-3xl border border-gray-200 bg-[var(--surface)] p-10 shadow-xl dark:border-slate-800">
+        <h2 className="mb-6 text-center text-2xl font-bold text-gray-900 dark:text-gray-100">
           Login to Your Workspace
         </h2>
 
         <div className="space-y-4">
-
           <input
+            ref={emailRef}
             type="email"
             placeholder="Email"
-            className="w-full border rounded-xl px-4 py-2"
+            className="w-full rounded-xl border border-gray-300 px-4 py-2 text-gray-900 placeholder:text-gray-500 dark:border-slate-700 dark:bg-slate-800/70 dark:text-gray-100 dark:placeholder:text-gray-400"
             value={form.email}
             onChange={(e) =>
               setForm({ ...form, email: e.target.value })
@@ -56,7 +72,7 @@ export default function Login() {
           <input
             type="password"
             placeholder="Password"
-            className="w-full border rounded-xl px-4 py-2"
+            className="w-full rounded-xl border border-gray-300 px-4 py-2 text-gray-900 placeholder:text-gray-500 dark:border-slate-700 dark:bg-slate-800/70 dark:text-gray-100 dark:placeholder:text-gray-400"
             value={form.password}
             onChange={(e) =>
               setForm({ ...form, password: e.target.value })
@@ -72,15 +88,12 @@ export default function Login() {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full bg-emerald-600 text-white py-2 rounded-xl hover:bg-emerald-700 transition disabled:opacity-60"
+            className="motion-button w-full rounded-xl bg-emerald-600 py-2 text-white shadow-sm hover:bg-emerald-700 hover:shadow-md disabled:opacity-60"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
-
         </div>
-
       </div>
-
     </div>
-  )
+  );
 }

@@ -99,7 +99,7 @@ export default function Shopping() {
       <ProjectSelector required />
 
       {selectedProject && (
-        <Card className="rounded-3xl border bg-[var(--surface)] shadow-sm">
+        <Card className="app-card rounded-3xl">
           <CardContent className="grid gap-3 p-4 sm:grid-cols-3">
             <Input
               placeholder="Item name"
@@ -146,7 +146,7 @@ export default function Shopping() {
 
       <div className="space-y-4">
         {safeItems.map((item) => (
-          <Card key={item.id} className="rounded-2xl border bg-[var(--surface)] shadow-sm">
+          <Card key={item.id} className="app-card rounded-2xl">
             <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className={`font-medium ${item.purchased ? "line-through text-muted-foreground" : ""}`}>
@@ -158,8 +158,8 @@ export default function Shopping() {
                 <Badge
                   className={
                     item.purchased
-                      ? "mt-2 border-emerald-200 bg-emerald-50 text-emerald-700"
-                      : "mt-2 border-amber-200 bg-amber-50 text-amber-700"
+                      ? "status-badge status-success mt-2"
+                      : "status-badge status-pending mt-2"
                   }
                 >
                   {item.purchased ? (

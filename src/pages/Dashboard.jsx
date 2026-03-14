@@ -1,5 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CheckCircle2, FolderKanban, Gauge, TrendingUp } from "lucide-react";
+﻿import { useEffect, useMemo, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  FolderKanban,
+  Gauge,
+  TrendingUp,
+} from "lucide-react";
 
 import api from "@/api/api";
 import BudgetPie from "@/components/BudgetPie";
@@ -25,12 +32,18 @@ function StatCard({ title, value, icon, progress, tone }) {
   };
 
   return (
-    <div className="transition-transform duration-200 hover:-translate-y-1">
+    <motion.div
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className="transition-transform duration-200"
+    >
       <Card className="rounded-3xl border bg-[var(--surface)] shadow-sm">
         <CardContent className="space-y-4 p-5">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <span className={`rounded-full border p-2 ${toneClass[tone] || toneClass.blue}`}>
+            <span
+              className={`rounded-full border p-2 ${toneClass[tone] || toneClass.blue}`}
+            >
               {icon}
             </span>
           </div>
@@ -41,18 +54,23 @@ function StatCard({ title, value, icon, progress, tone }) {
             <div className="h-2 overflow-hidden rounded-full bg-slate-100">
               <div
                 className={`h-full rounded-full ${barClass[tone] || barClass.blue}`}
-                style={{ width: `${Math.max(0, Math.min(100, progress || 0))}%` }}
+                style={{
+                  width: `${Math.max(0, Math.min(100, progress || 0))}%`,
+                }}
               />
             </div>
-            <p className="text-xs text-muted-foreground">{Math.round(progress || 0)}% reference scale</p>
+            <p className="text-xs text-muted-foreground">
+              {Math.round(progress || 0)}% reference scale
+            </p>
           </div>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
 
 export default function Dashboard() {
+  const reduceMotion = useReducedMotion();
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -122,7 +140,7 @@ export default function Dashboard() {
       completedProjects,
       overdueTasks,
       projectScaleDenominator,
-    ]
+    ],
   );
 
   if (loading) {
@@ -131,7 +149,10 @@ export default function Dashboard() {
         <div className="h-10 w-64 animate-pulse rounded-xl bg-slate-200" />
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((item) => (
-            <div key={item} className="h-40 animate-pulse rounded-3xl border bg-slate-100" />
+            <div
+              key={item}
+              className="h-40 animate-pulse rounded-3xl border bg-slate-100"
+            />
           ))}
         </div>
         <div className="grid gap-6 lg:grid-cols-2">
@@ -145,29 +166,59 @@ export default function Dashboard() {
   if (error) {
     return (
       <Card className="rounded-3xl border bg-[var(--surface)]">
-        <CardContent className="py-10 text-center text-red-500">{error}</CardContent>
+        <CardContent className="py-10 text-center text-red-500">
+          {error}
+        </CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Overview</p>
-        <h1 className="text-3xl font-bold tracking-tight">Renovation Dashboard</h1>
-        <p className="text-sm text-muted-foreground">A quick snapshot of projects, progress, and finances.</p>
-      </div>
+    <motion.div
+      initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+      className="space-y-8"
+    >
+      <motion.div className="space-y-2" initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={reduceMotion ? undefined : { opacity: 1, y: 0 }} transition={{ duration: 0.22 }}>
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          Overview
+        </p>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Renovation Dashboard
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          A quick snapshot of projects, progress, and finances.
+        </p>
+      </motion.div>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <motion.div
+        initial={reduceMotion ? false : "hidden"}
+        animate={reduceMotion ? undefined : "show"}
+        variants={{
+          hidden: { opacity: 0 },
+          show: { opacity: 1, transition: { staggerChildren: 0.07 } },
+        }}
+        className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4"
+      >
         {stats.map((stat) => (
-          <StatCard key={stat.title} {...stat} />
+          <motion.div key={stat.title} variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }} transition={{ duration: 0.24 }}>
+            <StatCard {...stat} />
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <motion.div
+        className="grid gap-6 lg:grid-cols-2"
+        initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+        animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+        transition={{ duration: 0.24, delay: 0.08 }}
+      >
         <Card className="rounded-3xl border bg-[var(--surface)] shadow-sm">
           <CardContent className="p-6">
-            <h2 className="mb-4 text-xl font-semibold tracking-tight">Budget Distribution</h2>
+            <h2 className="mb-4 text-xl font-semibold tracking-tight">
+              Budget Distribution
+            </h2>
             <BudgetPie spent={totalSpent} total={totalBudget} />
           </CardContent>
         </Card>
@@ -176,29 +227,41 @@ export default function Dashboard() {
           <CardContent className="space-y-5 p-6">
             <div className="flex items-center gap-2 text-white/90">
               <Gauge className="h-5 w-5" />
-              <h2 className="text-xl font-semibold tracking-tight">Financial Overview</h2>
+              <h2 className="text-xl font-semibold tracking-tight">
+                Financial Overview
+              </h2>
             </div>
 
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-white/85">Total Budget</span>
-                <span className="font-semibold">{formatCurrency(totalBudget)}</span>
+                <span className="font-semibold">
+                  {formatCurrency(totalBudget)}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-white/85">Total Spent</span>
-                <span className="font-semibold">{formatCurrency(totalSpent)}</span>
+                <span className="font-semibold">
+                  {formatCurrency(totalSpent)}
+                </span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-white/30">
-                <div className="h-full rounded-full bg-white" style={{ width: `${Math.min(spendPct, 100)}%` }} />
+                <div
+                  className="h-full rounded-full bg-white"
+                  style={{ width: `${Math.min(spendPct, 100)}%` }}
+                />
               </div>
               <div className="flex items-center justify-between text-base">
                 <span className="font-medium text-white/90">Remaining</span>
-                <span className="text-lg font-bold">{formatCurrency(remaining)}</span>
+                <span className="text-lg font-bold">
+                  {formatCurrency(remaining)}
+                </span>
               </div>
             </div>
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
+

@@ -7,7 +7,8 @@ export default function Inspiration() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Inspiration</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Generate renovation concepts and refine ideas with AI-assisted suggestions.
+          Generate renovation concepts and refine ideas with AI-assisted
+          suggestions.
         </p>
       </div>
 

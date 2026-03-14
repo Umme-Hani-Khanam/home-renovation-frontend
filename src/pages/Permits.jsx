@@ -18,9 +18,9 @@ const initialForm = {
 };
 
 const permitStatusClass = {
-  pending: "border-amber-200 bg-amber-50 text-amber-700",
-  approved: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  rejected: "border-rose-200 bg-rose-50 text-rose-700",
+  pending: "status-badge status-pending",
+  approved: "status-badge status-success",
+  rejected: "status-badge status-danger",
 };
 
 export default function Permits() {
@@ -179,7 +179,7 @@ export default function Permits() {
           const status = permit.status || "pending";
 
           return (
-            <Card key={permit.id} className="rounded-3xl border bg-[var(--surface)] shadow-sm">
+            <Card key={permit.id} className="app-card rounded-3xl">
               <CardContent className="space-y-3 p-5">
                 <h3 className="text-lg font-semibold tracking-tight">{permit.permit_name}</h3>
 

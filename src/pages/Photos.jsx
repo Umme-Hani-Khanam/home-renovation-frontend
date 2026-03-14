@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+﻿import { useCallback, useMemo, useState } from "react";
 import { Camera, ImageOff, UploadCloud } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 
 import api from "@/api/api";
 
@@ -13,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 function MissingImageCard() {
   return (
-    <Card className="mb-4 break-inside-avoid rounded-3xl border shadow-sm">
+    <Card className="app-card mb-4 break-inside-avoid rounded-3xl">
       <CardContent className="flex h-56 items-center justify-center text-sm text-muted-foreground">
         <span className="inline-flex items-center gap-2">
           <ImageOff className="h-4 w-4" />
@@ -39,16 +40,22 @@ function photoStage(index, total) {
 }
 
 function photoStageClass(stage) {
-  if (stage === "Before") return "border-blue-200 bg-blue-50 text-blue-700";
-  if (stage === "After") return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  return "border-amber-200 bg-amber-50 text-amber-700";
+  if (stage === "Before") return "status-badge status-progress";
+  if (stage === "After") return "status-badge status-success";
+  return "status-badge status-pending";
 }
 
 export default function Photos() {
+  const reduceMotion = useReducedMotion();
   const { selectedProject } = useProject();
 
   const [uploading, setUploading] = useState(false);
   const [previewPhoto, setPreviewPhoto] = useState(null);
+
+  const fetchPhotos = useCallback(async (projectId) => {
+    const res = await api.get(`/photos/${projectId}`);
+    return Array.isArray(res.data?.data) ? res.data.data : [];
+  }, []);
 
   const {
     data: photos,
@@ -58,10 +65,7 @@ export default function Photos() {
     refetch,
   } = useProjectData({
     projectId: selectedProject?.id,
-    fetcher: async (projectId) => {
-      const res = await api.get(`/photos/${projectId}`);
-      return Array.isArray(res.data?.data) ? res.data.data : [];
-    },
+    fetcher: fetchPhotos,
   });
 
   const orderedPhotos = useMemo(() => {
@@ -104,8 +108,13 @@ export default function Photos() {
   };
 
   return (
-    <div className="animate-fade-in space-y-8">
-      <div>
+    <motion.div
+      className="space-y-8"
+      initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div className="animate-fade-in">
         <h1 className="text-3xl font-bold tracking-tight">Project Photos</h1>
         <p className="mt-1 text-sm text-muted-foreground">Upload and review project progress photos.</p>
       </div>
@@ -132,7 +141,7 @@ export default function Photos() {
       {!!error && <p className="text-red-600">{error}</p>}
 
       {selectedProject && !loading && !uploading && orderedPhotos.length === 0 && (
-        <Card className="rounded-3xl">
+        <Card className="app-card rounded-3xl">
           <CardContent className="flex flex-col items-center gap-3 py-12 text-center text-muted-foreground">
             <Camera className="h-8 w-8 text-slate-400" />
             <p>No photos uploaded yet.</p>
@@ -152,15 +161,15 @@ export default function Photos() {
           return (
             <Card
               key={photo.id || `photo-${index}`}
-              className="group mb-4 cursor-pointer break-inside-avoid overflow-hidden rounded-3xl border shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+              className="app-card group mb-4 cursor-pointer break-inside-avoid overflow-hidden rounded-3xl"
               onClick={() => setPreviewPhoto({ url: imageUrl, stage, created_at: photo?.created_at })}
             >
               <CardContent className="relative p-0">
-                <img src={imageUrl} alt="Project progress" className="h-auto w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+                <img src={imageUrl} alt="Project progress" className="h-auto w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.035]" />
                 <div className="absolute inset-0 bg-black/0 transition group-hover:bg-black/15" />
                 <div className="absolute left-2 top-2 flex flex-col gap-1">
                   <Badge className={photoStageClass(stage)}>{stage}</Badge>
-                  <Badge className="border-slate-200 bg-slate-50 text-slate-700">{formatDate(photo?.created_at)}</Badge>
+                  <Badge className="status-badge border-slate-300 bg-slate-50 text-slate-700 dark:border-slate-600 dark:bg-slate-800/70 dark:text-slate-200">{formatDate(photo?.created_at)}</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -172,7 +181,7 @@ export default function Photos() {
         <DialogContent className="max-h-[90vh] max-w-4xl overflow-hidden rounded-2xl p-2">
           <DialogHeader className="px-3 pt-3">
             <DialogTitle>
-              {previewPhoto?.stage || "Photo"} � {formatDate(previewPhoto?.created_at)}
+              {previewPhoto?.stage || "Photo"} • {formatDate(previewPhoto?.created_at)}
             </DialogTitle>
           </DialogHeader>
           {previewPhoto?.url && (
@@ -180,6 +189,6 @@ export default function Photos() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 }

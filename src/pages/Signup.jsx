@@ -1,64 +1,70 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { motion } from "framer-motion"
-import api from "@/api/api"
+﻿import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import api from "@/api/api";
 
 export default function Signup() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const emailRef = useRef(null);
 
   const [form, setForm] = useState({
     email: "",
-    password: ""
-  })
+    password: "",
+  });
 
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    emailRef.current?.focus();
+  }, []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
 
-    if (!form.email || !form.password) {
-      return setError("All fields are required.")
+    if (!form.email.trim() || !form.password) {
+      return setError("Email and password are required.");
     }
 
     try {
-      setLoading(true)
-      await api.post("/auth/signup", form)
-      navigate("/login")
+      setLoading(true);
+      await api.post("/auth/signup", {
+        email: form.email.trim(),
+        password: form.password,
+      });
+      navigate("/login");
     } catch (err) {
       setError(
         err.response?.data?.message || "Signup failed. Try again."
-      )
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-gray-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-4">
-
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-gray-100 px-4 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-gray-200 dark:border-slate-800 p-10 rounded-3xl shadow-2xl w-full max-w-md"
+        transition={{ duration: 0.24 }}
+        className="w-full max-w-md rounded-3xl border border-gray-200 bg-white/80 p-10 shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/80"
       >
-
-        <h2 className="text-3xl font-bold mb-2 text-center">
+        <h2 className="mb-2 text-center text-3xl font-bold text-gray-900 dark:text-gray-100">
           Create Account
         </h2>
-        <p className="text-center text-gray-500 dark:text-gray-400 mb-6">
+        <p className="mb-6 text-center text-gray-600 dark:text-gray-200">
           Start managing your renovation projects
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-
           <div>
             <input
+              ref={emailRef}
               type="email"
               placeholder="Email"
-              className="w-full border border-gray-300 dark:border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+              className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder:text-gray-500 transition focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/70 dark:text-gray-100 dark:placeholder:text-gray-400"
               value={form.email}
               onChange={(e) =>
                 setForm({ ...form, email: e.target.value })
@@ -70,7 +76,7 @@ export default function Signup() {
             <input
               type="password"
               placeholder="Password"
-              className="w-full border border-gray-300 dark:border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+              className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder:text-gray-500 transition focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800/70 dark:text-gray-100 dark:placeholder:text-gray-400"
               value={form.password}
               onChange={(e) =>
                 setForm({ ...form, password: e.target.value })
@@ -79,31 +85,28 @@ export default function Signup() {
           </div>
 
           {error && (
-            <p className="text-red-500 text-sm">{error}</p>
+            <p className="text-sm text-red-500">{error}</p>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-all text-white py-3 rounded-xl font-semibold shadow-md"
+            className="motion-button w-full rounded-xl bg-emerald-600 py-3 font-semibold text-white shadow-md hover:bg-emerald-700 hover:shadow-lg"
           >
             {loading ? "Creating..." : "Create Account"}
           </button>
 
-          <p className="text-center text-sm text-[var(--text-secondary)]">
+          <p className="text-center text-sm text-[var(--text-secondary)] dark:text-gray-200">
             Already have an account?{" "}
             <span
               onClick={() => navigate("/login")}
-              className="text-emerald-600 font-semibold cursor-pointer hover:underline"
+              className="motion-link motion-link-underline cursor-pointer font-semibold text-emerald-600 dark:text-indigo-400"
             >
               Login
             </span>
           </p>
-
         </form>
-
       </motion.div>
-
     </div>
-  )
+  );
 }

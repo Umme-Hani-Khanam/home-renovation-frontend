@@ -7,7 +7,8 @@ export default function Contractors() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Contractors</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Add contractors, schedule visits, and monitor contractor activity trends.
+          Add contractors, schedule visits, and monitor contractor activity
+          trends.
         </p>
       </div>
 

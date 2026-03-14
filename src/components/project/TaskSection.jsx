@@ -23,15 +23,15 @@ const initialForm = {
 };
 
 const statusBadgeClass = {
-  pending: "border-amber-200 bg-amber-50 text-amber-700",
-  in_progress: "border-blue-200 bg-blue-50 text-blue-700",
-  completed: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  pending: "status-badge status-pending",
+  in_progress: "status-badge status-progress",
+  completed: "status-badge status-success",
 };
 
 const priorityBadgeClass = {
-  low: "border-slate-200 bg-slate-100 text-slate-700",
-  medium: "border-amber-200 bg-amber-50 text-amber-700",
-  high: "border-rose-200 bg-rose-50 text-rose-700",
+  low: "status-badge border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-200",
+  medium: "status-badge status-pending",
+  high: "status-badge status-danger",
 };
 
 function memberDisplay(member) {
@@ -203,7 +203,7 @@ export default function TaskSection({ projectId: projectIdProp }) {
         </Button>
       </div>
 
-      <Card className="rounded-2xl border bg-[var(--surface)] shadow-sm">
+      <Card className="app-card rounded-2xl">
         <CardContent className="space-y-4 p-4">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-emerald-600" />
@@ -267,7 +267,7 @@ export default function TaskSection({ projectId: projectIdProp }) {
       {error && <p className="text-red-600">{error}</p>}
 
       {!loading && displayedTasks.length === 0 && (
-        <Card className="rounded-2xl border">
+        <Card className="app-card rounded-2xl">
           <CardContent className="flex flex-col items-center gap-3 py-10 text-center text-muted-foreground">
             <ClipboardList className="h-8 w-8 text-slate-400" />
             <p>{activeMode === "maintenance" ? "No recurring maintenance tasks yet." : "No tasks created yet."}</p>
@@ -284,11 +284,11 @@ export default function TaskSection({ projectId: projectIdProp }) {
           const assignee = task.assigned_member || assignableMembers.find((member) => member.user_id === task.assigned_to);
 
           return (
-            <Card key={task.id} className="rounded-2xl border bg-[var(--surface)] shadow-sm">
-              <CardContent className="space-y-3 p-4">
+            <Card key={task.id} className="app-card rounded-2xl">
+              <CardContent className="space-y-4 p-5">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h3 className="font-semibold tracking-tight">{task.title}</h3>
+                    <h3 className="text-base font-semibold tracking-tight">{task.title}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">{task.description || "No description"}</p>
                   </div>
                   <Badge className={`capitalize ${priorityBadgeClass[priority] || priorityBadgeClass.medium}`}>
@@ -315,7 +315,7 @@ export default function TaskSection({ projectId: projectIdProp }) {
                     </Badge>
                   )}
 
-                  <Badge className="border-slate-200 bg-slate-100 text-slate-700">
+                  <Badge className="status-badge border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-200">
                     {assignee ? memberDisplay(assignee) : "Unassigned"}
                   </Badge>
                 </div>
@@ -347,9 +347,10 @@ export default function TaskSection({ projectId: projectIdProp }) {
                   </select>
                 </div>
 
-                <p className="text-xs text-muted-foreground">
-                  Deadline: {task.deadline || "Not set"} | Reminder: {task.reminder_at ? new Date(task.reminder_at).toLocaleString() : "Not set"}
-                </p>
+                <div className="grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
+                  <p>Deadline: {task.deadline || "Not set"}</p>
+                  <p>Reminder: {task.reminder_at ? new Date(task.reminder_at).toLocaleString() : "Not set"}</p>
+                </div>
               </CardContent>
             </Card>
           );
