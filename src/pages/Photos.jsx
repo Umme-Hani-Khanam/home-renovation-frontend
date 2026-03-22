@@ -1,0 +1,214 @@
+import { useCallback, useMemo, useState } from "react";
+import { Camera, ImageOff, UploadCloud } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+
+import api from "@/api/api";
+import { useProject } from "@/context/ProjectContext";
+import useProjectData from "@/hooks/useProjectData";
+import ProjectSelector from "@/components/project/ProjectSelector";
+import { normalizeBase64Payload, normalizeImageUrl, toBase64 } from "@/lib/photos";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+function MissingImageCard() {
+  return (
+    <Card className="app-card rounded-2xl">
+      <CardContent className="flex h-52 items-center justify-center text-sm text-muted-foreground">
+        <span className="inline-flex items-center gap-2">
+          <ImageOff className="h-4 w-4" />
+          Image unavailable
+        </span>
+      </CardContent>
+    </Card>
+  );
+}
+
+function formatDate(value) {
+  if (!value) return "Unknown date";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString();
+}
+
+function photoStage(index, total) {
+  if (total === 1) return "Progress";
+  if (index === 0) return "Before";
+  if (index === total - 1) return "After";
+  return "Progress";
+}
+
+function photoStageClass(stage) {
+  if (stage === "Before") return "status-badge status-progress";
+  if (stage === "After") return "status-badge status-success";
+  return "status-badge status-pending";
+}
+
+export default function Photos() {
+  const reduceMotion = useReducedMotion();
+  const { selectedProject } = useProject();
+  const [uploading, setUploading] = useState(false);
+  const [previewPhoto, setPreviewPhoto] = useState(null);
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [brokenImages, setBrokenImages] = useState({});
+
+  const fetchPhotos = useCallback(async (projectId) => {
+    const res = await api.get(`/photos/${projectId}`);
+    return Array.isArray(res.data?.data) ? res.data.data : [];
+  }, []);
+
+  const {
+    data: photos,
+    loading,
+    error,
+    setError,
+    refetch,
+  } = useProjectData({
+    projectId: selectedProject?.id,
+    fetcher: fetchPhotos,
+  });
+
+  const orderedPhotos = useMemo(() => {
+    const safePhotos = Array.isArray(photos) ? photos : [];
+    return [...safePhotos].sort((a, b) => {
+      const left = new Date(a?.created_at || 0).getTime();
+      const right = new Date(b?.created_at || 0).getTime();
+      return left - right;
+    });
+  }, [photos]);
+
+  const uploadPhotos = async (event) => {
+    const files = Array.from(event.target.files || []);
+    if (!selectedProject?.id || files.length === 0) return;
+
+    try {
+      setUploading(true);
+      setError("");
+      setUploadMessage("");
+
+      for (const file of files) {
+        const dataUrl = await toBase64(file);
+
+        await api.post("/photos", {
+          project_id: selectedProject.id,
+          image_base64: normalizeBase64Payload(dataUrl),
+          file_name: file.name,
+        });
+      }
+
+      await refetch();
+      setUploadMessage(`${files.length} photo${files.length > 1 ? "s" : ""} uploaded successfully.`);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to upload photos");
+    } finally {
+      setUploading(false);
+      event.target.value = "";
+    }
+  };
+
+  return (
+    <motion.div
+      initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+      className="page-shell space-y-6"
+    >
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Project Photos</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Upload and review progress images without breaking your flow on smaller screens.
+        </p>
+      </div>
+
+      <ProjectSelector required />
+
+      {selectedProject && (
+        <label className="block cursor-pointer rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/60 p-4 text-center transition hover:border-emerald-400 hover:bg-emerald-50 sm:p-6 dark:border-emerald-500/50 dark:bg-emerald-500/10 dark:text-emerald-200">
+          <span className="inline-flex items-center gap-2 text-sm font-medium text-emerald-900 dark:text-emerald-200">
+            <UploadCloud className="h-4 w-4" />
+            {uploading ? "Uploading photos..." : "Tap to upload project photos"}
+          </span>
+          <input type="file" multiple accept="image/*" className="hidden" onChange={uploadPhotos} />
+        </label>
+      )}
+
+      {(loading || uploading) && (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((item) => (
+            <div key={item} className="h-52 animate-pulse rounded-2xl border bg-slate-100" />
+          ))}
+        </div>
+      )}
+
+      {!!error && <p className="text-sm text-red-600">{error}</p>}
+      {!!uploadMessage && !uploading && (
+        <p className="text-sm text-emerald-700 dark:text-emerald-300">{uploadMessage}</p>
+      )}
+
+      {selectedProject && !loading && !uploading && orderedPhotos.length === 0 && (
+        <Card className="app-card rounded-2xl">
+          <CardContent className="flex flex-col items-center gap-3 py-10 text-center text-muted-foreground">
+            <Camera className="h-8 w-8 text-slate-400" />
+            <p>No photos uploaded yet.</p>
+            <p className="text-xs">Upload photos to build your renovation timeline.</p>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {orderedPhotos.map((photo, index) => {
+          const imageUrl = normalizeImageUrl(photo?.image_url, import.meta.env.VITE_API_URL);
+          const stage = photoStage(index, orderedPhotos.length);
+          const imageKey = String(photo.id || index);
+
+          if (!imageUrl || brokenImages[imageKey]) {
+            return <MissingImageCard key={photo?.id || `missing-${index}`} />;
+          }
+
+          return (
+            <Card
+              key={photo.id || `photo-${index}`}
+              className="app-card group cursor-pointer overflow-hidden rounded-2xl"
+              onClick={() => setPreviewPhoto({ url: imageUrl, stage, created_at: photo?.created_at })}
+            >
+              <CardContent className="relative p-0">
+                <img
+                  src={imageUrl}
+                  alt="Project progress"
+                  className="aspect-[4/3] w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.035]"
+                  onError={() => {
+                    setBrokenImages((prev) => ({ ...prev, [imageKey]: true }));
+                  }}
+                />
+                <div className="absolute inset-0 bg-black/0 transition group-hover:bg-black/15" />
+                <div className="absolute left-3 top-3 flex flex-col gap-2">
+                  <Badge className={photoStageClass(stage)}>{stage}</Badge>
+                  <Badge className="status-badge border-slate-300 bg-slate-50 text-slate-700 dark:border-slate-600 dark:bg-slate-800/70 dark:text-slate-200">
+                    {formatDate(photo?.created_at)}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      <Dialog open={Boolean(previewPhoto)} onOpenChange={(open) => !open && setPreviewPhoto(null)}>
+        <DialogContent className="max-h-[90vh] max-w-4xl overflow-hidden rounded-2xl p-2">
+          <DialogHeader className="px-3 pt-3">
+            <DialogTitle>
+              {previewPhoto?.stage || "Photo"} - {formatDate(previewPhoto?.created_at)}
+            </DialogTitle>
+          </DialogHeader>
+          {previewPhoto?.url && (
+            <img
+              src={previewPhoto.url}
+              alt="Preview"
+              className="max-h-[78vh] w-full rounded-xl object-contain"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </motion.div>
+  );
+}

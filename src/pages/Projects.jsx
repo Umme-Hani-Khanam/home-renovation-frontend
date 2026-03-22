@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
@@ -30,10 +30,19 @@ export default function Projects() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [form, setForm] = useState(initialForm);
+  const projectNameRef = useRef(null);
 
   useEffect(() => {
     fetchProjects();
   }, []);
+
+  useEffect(() => {
+    if (open) {
+      requestAnimationFrame(() => {
+        projectNameRef.current?.focus();
+      });
+    }
+  }, [open]);
 
   const fetchProjects = async () => {
     try {
@@ -102,7 +111,7 @@ export default function Projects() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="page-shell space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Projects</h1>
@@ -128,7 +137,7 @@ export default function Projects() {
         </Card>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {projects.map((project) => (
           <motion.div key={project.id} whileHover={{ y: -6 }}>
             <Card
@@ -156,13 +165,14 @@ export default function Projects() {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[520px]">
+        <DialogContent className="sm:max-w-[32.5rem]">
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
           </DialogHeader>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Input
+              ref={projectNameRef}
               placeholder="Project name"
               value={form.name}
               onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}

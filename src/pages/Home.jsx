@@ -62,22 +62,22 @@ export default function Home() {
         />
       </div>
 
-      <header className="sticky top-0 z-50 flex items-center justify-between border-b border-gray-200 bg-white/60 px-6 py-5 backdrop-blur-xl md:px-10 dark:border-slate-800 dark:bg-slate-900/60">
+      <header className="sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-white/60 px-4 py-4 backdrop-blur-xl sm:px-6 md:px-10 dark:border-slate-800 dark:bg-slate-900/60">
         <h1 className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-2xl font-bold tracking-tight text-transparent">
           HomeTracker
         </h1>
 
-        <div className="flex gap-4">
+        <div className="flex w-full gap-3 sm:w-auto sm:gap-4">
           <button
             onClick={() => navigate("/login")}
-            className="motion-button rounded-xl border border-emerald-600 px-5 py-2 text-emerald-600 shadow-sm transition-all duration-300 hover:scale-105 hover:bg-emerald-50 hover:shadow-2xl dark:border-slate-700 dark:text-gray-100 dark:hover:bg-slate-800"
+            className="motion-button flex-1 rounded-xl border border-emerald-600 px-4 py-2 text-emerald-600 shadow-sm transition-all duration-300 hover:scale-105 hover:bg-emerald-50 hover:shadow-2xl sm:flex-none sm:px-5 dark:border-slate-700 dark:text-gray-100 dark:hover:bg-slate-800"
           >
             Login
           </button>
 
           <button
             onClick={() => navigate("/signup")}
-            className="motion-button rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 px-5 py-2 text-white shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:scale-105 hover:shadow-[0_24px_60px_-24px_rgba(16,185,129,0.75)]"
+            className="motion-button flex-1 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 px-4 py-2 text-white shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:scale-105 hover:shadow-[0_24px_60px_-24px_rgba(16,185,129,0.75)] sm:flex-none sm:px-5"
           >
             Sign Up
           </button>
@@ -89,13 +89,13 @@ export default function Home() {
         animate="show"
         variants={reveal}
         transition={fastTransition}
-        className="mx-auto grid max-w-7xl items-center gap-14 px-6 pb-20 pt-20 md:px-10 lg:grid-cols-[1.1fr_0.9fr]"
+        className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-16 pt-14 sm:px-6 md:gap-14 md:px-10 md:pb-20 md:pt-20 lg:grid-cols-[1.1fr_0.9fr]"
       >
         <div className="text-center lg:text-left">
           <motion.div
             variants={reveal}
             transition={{ ...fastTransition, delay: 0.02 }}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/65 px-4 py-2 text-sm font-medium text-emerald-800 shadow-lg shadow-emerald-950/5 backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/55 dark:text-emerald-200"
+            className="mb-6 inline-flex max-w-full items-center gap-2 rounded-full border border-white/70 bg-white/65 px-4 py-2 text-sm font-medium text-emerald-800 shadow-lg shadow-emerald-950/5 backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/55 dark:text-emerald-200"
           >
             <Sparkles className="h-4 w-4" />
             Home renovation command center
@@ -104,7 +104,7 @@ export default function Home() {
           <motion.h2
             variants={reveal}
             transition={{ ...fastTransition, delay: 0.06 }}
-            className="mb-6 max-w-4xl text-5xl font-bold leading-[1.05] text-gray-900 dark:text-gray-100 md:text-6xl lg:text-7xl"
+            className="mb-6 max-w-2xl text-2xl font-bold leading-[1.05] text-gray-900 dark:text-gray-100 sm:text-5xl md:text-6xl lg:text-7xl"
           >
             Bring calm, clarity, and motion to every{" "}
             <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 bg-clip-text text-transparent">
@@ -116,7 +116,7 @@ export default function Home() {
           <motion.p
             variants={reveal}
             transition={{ ...fastTransition, delay: 0.12 }}
-            className="mb-10 max-w-2xl text-lg text-[var(--text-secondary)] dark:text-gray-200"
+            className="mb-8 max-w-2xl text-base text-[var(--text-secondary)] dark:text-gray-200 sm:text-lg md:mb-10"
           >
             Track budgets, tasks, contractors, permits, and photo progress in
             one elegant workspace designed for homeowners who want fewer
@@ -126,18 +126,18 @@ export default function Home() {
           <motion.div
             variants={reveal}
             transition={{ ...fastTransition, delay: 0.18 }}
-            className="flex flex-wrap justify-center gap-5 lg:justify-start"
+            className="flex flex-col justify-center gap-4 sm:flex-row sm:flex-wrap sm:gap-5 lg:justify-start"
           >
             <button
               onClick={() => navigate("/signup")}
-              className="motion-button rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:scale-105 hover:shadow-[0_24px_60px_-24px_rgba(16,185,129,0.75)]"
+              className="motion-button min-h-11 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:scale-105 hover:shadow-[0_24px_60px_-24px_rgba(16,185,129,0.75)] sm:px-8 sm:text-lg"
             >
               Start Free Today
             </button>
 
             <button
               onClick={() => navigate("/login")}
-              className="motion-button rounded-2xl border border-white/70 bg-white/70 px-8 py-4 text-lg font-semibold text-gray-900 shadow-lg shadow-slate-950/5 backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:bg-white hover:shadow-2xl dark:border-slate-700 dark:bg-slate-900/60 dark:text-gray-100 dark:hover:bg-slate-900"
+              className="motion-button min-h-11 rounded-2xl border border-white/70 bg-white/70 px-6 py-4 text-base font-semibold text-gray-900 shadow-lg shadow-slate-950/5 backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:bg-white hover:shadow-2xl sm:px-8 sm:text-lg dark:border-slate-700 dark:bg-slate-900/60 dark:text-gray-100 dark:hover:bg-slate-900"
             >
               Login
             </button>
@@ -220,7 +220,7 @@ export default function Home() {
           hidden: { opacity: 0, y: 12 },
           show: { opacity: 1, y: 0, transition: { staggerChildren: 0.08 } },
         }}
-        className="mx-auto grid max-w-6xl gap-8 px-8 pb-24 md:grid-cols-3"
+        className="mx-auto grid max-w-6xl gap-6 px-4 pb-20 sm:px-6 md:grid-cols-2 md:px-8 lg:grid-cols-3"
       >
         {features.map((feature, index) => {
           const Icon = feature.icon;

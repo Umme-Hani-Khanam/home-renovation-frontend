@@ -44,12 +44,12 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-gray-100 px-4 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-gray-100 px-4 py-8 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.24 }}
-        className="w-full max-w-md rounded-3xl border border-gray-200 bg-white/80 p-10 shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/80"
+        className="w-full max-w-md rounded-3xl border border-gray-200 bg-white/80 p-6 shadow-2xl backdrop-blur-xl sm:p-8 lg:p-10 dark:border-slate-800 dark:bg-slate-900/80"
       >
         <h2 className="mb-2 text-center text-3xl font-bold text-gray-900 dark:text-gray-100">
           Create Account
